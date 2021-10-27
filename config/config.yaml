@@ -1,0 +1,22 @@
+port: 8004
+
+# seconds, default = 1200 (20min)
+timeError: 3600
+
+# kilometeres, default = 30
+rangeError: 100
+
+# seconds, default = 1800 (30min)
+udpateTime: 500
+
+locations: 
+  - typ: city
+    val: London
+  - typ: cityId
+    val: "2172797"
+  - typ: zipCode
+    val: "94040,us"
+  - typ: coords
+    lat: "35"
+    lon: "139"
+  
