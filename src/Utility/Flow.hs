@@ -1,8 +1,9 @@
 module Utility.Flow where
 
-import Control.Monad.Trans.Reader (ReaderT (runReaderT), ask)
-import Servant (Handler, ServerError, runHandler)
-import Types.Environment (Environment (Environment))
+import           Control.Monad              (void)
+import           Control.Monad.Trans.Reader (ReaderT (runReaderT), ask)
+import           Servant                    (Handler, runHandler)
+import           Types.Environment          (Environment)
 
 type Flow = ReaderT Environment Handler
 
@@ -10,9 +11,7 @@ runFlow :: Flow a -> Environment -> Handler a
 runFlow = runReaderT
 
 runFlowIO :: Environment -> Flow a -> IO ()
-runFlowIO env f = do
-  runHandler (runEnv env f)
-  pure ()
+runFlowIO env f = void $ runHandler (runEnv env f)
 
 runEnv :: Environment -> Flow a -> Handler a
 runEnv env f = runReaderT f env

@@ -1,21 +1,14 @@
 module Cache.Redis.Queries (setAdd, setGetRange, setRem, mapAdd, mapGet) where
 
-import Control.Monad.IO.Class (liftIO)
-import Data.Aeson (Value, decode, encode)
-import Data.ByteString.Lazy.Char8 (ByteString, fromStrict, pack, toStrict, unpack)
-import Data.Maybe (catMaybes, isJust, mapMaybe)
-import Database.Redis
-  ( Reply,
-    hget,
-    hset,
-    runRedis,
-    zadd,
-    zrangebyscore,
-    zrem,
-  )
-import qualified Types.Environment as Environment
-import Types.Wheather (Coordinates)
-import Utility.Flow (Flow, getEnvironment)
+import           Control.Monad.IO.Class     (liftIO)
+import           Data.Aeson                 (Value, decode, encode)
+import           Data.ByteString.Lazy.Char8 (ByteString, fromStrict, pack,
+                                             toStrict)
+import           Data.Maybe                 (mapMaybe)
+import           Database.Redis             (Reply, hget, hset, runRedis, zadd,
+                                             zrangebyscore, zrem)
+import qualified Types.Environment          as Environment
+import           Utility.Flow               (Flow, getEnvironment)
 
 setAdd :: String -> Double -> Value -> Flow ()
 setAdd key score member = do
@@ -27,11 +20,11 @@ setAdd key score member = do
   either (printReturnDef ()) (\_ -> pure ()) res
 
 setGetRange :: String -> Double -> Double -> Flow [Value]
-setGetRange key min max = do
+setGetRange key min_ max_ = do
   env <- getEnvironment
   let conn = Environment.conn env
   let keyBs = toStrict . pack $ key
-  res <- liftIO $ runRedis conn (zrangebyscore keyBs min max)
+  res <- liftIO $ runRedis conn (zrangebyscore keyBs min_ max_)
   either (printReturnDef []) (pure . mapMaybe (decode . fromStrict)) res
 
 setRem :: String -> Value -> Flow ()

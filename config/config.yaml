@@ -7,7 +7,7 @@ timeError: 3600
 rangeError: 100
 
 # seconds, default = 1800 (30min)
-udpateTime: 500
+updateTime: 500
 
 locations: 
   - typ: city

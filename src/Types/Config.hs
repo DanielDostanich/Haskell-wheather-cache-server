@@ -1,16 +1,15 @@
 module Types.Config (ConfigFields (..)) where
 
-import Data.Text (Text)
-import GHC.Base (Double, Int)
-import GHC.Num (Integer)
-import Types.Wheather (RequestType)
-import Prelude (Show)
+import           GHC.Base       (Double, Int)
+import           GHC.Num        (Integer)
+import           Prelude        (Show)
+import           Types.Wheather (RequestType)
 
 data ConfigFields = ConfigFields
-  { timeError :: Integer,
-    rangeError :: Double,
-    port :: Int,
+  { timeError        :: Integer,
+    rangeError       :: Double,
+    port             :: Int,
     autoUpdLocations :: [RequestType],
-    sleepTime :: Int
+    sleepTime        :: Int
   }
   deriving (Show)

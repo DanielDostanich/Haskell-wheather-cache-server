@@ -2,12 +2,11 @@
 
 module Utility.HttpErrorResponse where
 
-import Data.Aeson (FromJSON, ToJSON (toJSON), Value)
-import Data.Aeson.Types (FromJSON, ToJSON)
-import GHC.Generics (Generic)
+import           Data.Aeson   (FromJSON, ToJSON (toJSON), Value)
+import           GHC.Generics (Generic)
 
 data ErrorJSON = ErrorJSON
-  { cod :: Int,
+  { cod     :: Int,
     message :: String
   }
   deriving (Generic)
