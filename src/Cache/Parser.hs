@@ -1,16 +1,15 @@
 {-# LANGUAGE OverloadedStrings #-}
-{-# LANGUAGE RecordWildCards #-}
+{-# LANGUAGE RecordWildCards   #-}
 
 module Cache.Parser where
 
-import Data.Aeson (Object, decode, (.:))
-import Data.Aeson.Types (Value (Object), parseMaybe)
-import Data.ByteString.Lazy.Char8 (ByteString, pack)
+import           Data.Aeson       ((.:))
+import           Data.Aeson.Types (Value (Object), parseMaybe)
 
 data ResJSON = ResJSON
   { resLat :: Double,
     resLon :: Double,
-    time :: Integer
+    time   :: Integer
   }
 
 parseWheatherJSON :: Value -> Maybe ResJSON

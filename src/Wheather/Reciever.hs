@@ -2,21 +2,13 @@
 
 module Wheather.Reciever where
 
-import Cache.Redis.Queries (mapAdd)
-import Data.Aeson.Types (Value)
-import Data.ByteString.Lazy.Char8 (ByteString)
-import qualified Data.ByteString.Lazy.Char8 as L8
-import Network.HTTP.Simple
-  ( getResponseBody,
-    getResponseStatus,
-    httpJSON,
-    httpLBS,
-    parseRequest,
-  )
-import Network.HTTP.Types (ok200)
-import Types.Wheather (RequestType (..))
-import Utility.Flow (Flow)
-import Wheather.RequestMaker (makeRequest)
+import           Data.Aeson.Types      (Value)
+import           Network.HTTP.Simple   (getResponseBody, getResponseStatus,
+                                        httpJSON, parseRequest)
+import           Network.HTTP.Types    (ok200)
+import           Types.Wheather        (RequestType (..))
+import           Utility.Flow          (Flow)
+import           Wheather.RequestMaker (makeRequest)
 
 receiveWheather :: RequestType -> Flow (Either Value Value)
 receiveWheather reqType = do

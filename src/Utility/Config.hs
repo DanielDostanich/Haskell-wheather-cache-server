@@ -1,20 +1,19 @@
 {-# LANGUAGE OverloadedStrings #-}
-{-# LANGUAGE RecordWildCards #-}
+{-# LANGUAGE RecordWildCards   #-}
 
 module Utility.Config (readConfig) where
 
-import Control.Exception (catch)
-import Data.Aeson (FromJSON, (.:))
-import Data.Aeson.Types (prependFailure, typeMismatch)
-import Data.Maybe (fromJust, isJust)
-import Data.Text (Text, empty)
-import Data.Yaml (FromJSON, (.:?))
-import qualified Data.Yaml as Yaml
-import Data.Yaml.Aeson (FromJSON)
-import Types.Config (ConfigFields (..))
-import Types.Environment (Environment (Environment, wheaterAPIKey))
-import Types.Wheather (CoordsStr (CoordsStr), RequestType (City, CityId, Coords, ZIPCode))
-import Utility.ConfigException (ConfigExc (ConfigExc, getExcText), throwConfigExc)
+import           Control.Exception       (catch)
+import           Data.Aeson              (FromJSON, (.:))
+import           Data.Maybe              (fromJust, isJust)
+import           Data.Text               (Text)
+import           Data.Yaml               ((.:?))
+import qualified Data.Yaml               as Yaml
+import           Types.Config            (ConfigFields (..))
+import           Types.Wheather          (CoordsStr (CoordsStr),
+                                          RequestType (City, CityId, Coords, ZIPCode))
+import           Utility.ConfigException (ConfigExc (getExcText),
+                                          throwConfigExc)
 
 readConfig :: IO (Either String ConfigFields)
 readConfig =
@@ -46,11 +45,11 @@ readPlacesList obj = do
   let lst = Yaml.parseEither (.: "locations") obj
   case lst of
     Left err -> throwConfigExc err
-    Right lst -> do
-      let locations = map (Yaml.parseEither parseLocations) lst
+    Right lst_ -> do
+      let locations = map (Yaml.parseEither parseLocations) lst_
       mapM helper locations
   where
-    helper (Left err) = throwConfigExc err
+    helper (Left err)  = throwConfigExc err
     helper (Right loc) = getRequestType loc
 
     getRequestType :: Location -> IO RequestType

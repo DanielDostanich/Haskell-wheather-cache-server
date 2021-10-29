@@ -1,28 +1,28 @@
 {-# LANGUAGE OverloadedStrings #-}
-{-# LANGUAGE RecordWildCards #-}
+{-# LANGUAGE RecordWildCards   #-}
 
 module Cache.Getter (getWheather) where
 
-import Cache.Geography (distance, getSection)
-import Cache.Parser
-  ( ResJSON (resLat, resLon, time),
-    parseWheatherJSON,
-  )
-import Cache.Redis.Map (cityIDMapAdd, cityIDMapGet, cityMapAdd, cityMapGet, zipcodeMapAdd, zipcodeMapGet)
-import Cache.Redis.Set (tempsAdd, tempsRange, tempsRem)
-import Control.Monad.IO.Class (liftIO)
-import Data.Aeson (Value)
+import           Cache.Geography           (distance, getSection)
+import           Cache.Parser              (ResJSON (resLat, resLon, time),
+                                            parseWheatherJSON)
+import           Cache.Redis.Map           (cityIDMapAdd, cityIDMapGet,
+                                            cityMapAdd, cityMapGet,
+                                            zipcodeMapAdd, zipcodeMapGet)
+import           Cache.Redis.Set           (tempsAdd, tempsRange, tempsRem)
+import           Control.Monad.IO.Class    (liftIO)
+import           Data.Aeson                (Value)
 import qualified Data.Bifunctor
-import Data.ByteString.Lazy.Char8 (ByteString, pack)
-import Data.List (partition)
-import Data.Maybe (fromJust, isJust)
-import Data.Time.Clock.POSIX (getPOSIXTime)
-import Text.Read (readEither)
-import qualified Types.Environment as Environment
-import Types.Wheather (Coordinates (..), CoordsStr (..), RequestType (..))
-import Utility.Flow (Flow, getEnvironment)
-import Utility.HttpErrorResponse (httpErrorResponse)
-import Wheather.Reciever (receiveWheather)
+import           Data.List                 (partition)
+import           Data.Maybe                (fromJust, isJust)
+import           Data.Time.Clock.POSIX     (getPOSIXTime)
+import           Text.Read                 (readEither)
+import qualified Types.Environment         as Environment
+import           Types.Wheather            (Coordinates (..), CoordsStr (..),
+                                            RequestType (..))
+import           Utility.Flow              (Flow, getEnvironment)
+import           Utility.HttpErrorResponse (httpErrorResponse)
+import           Wheather.Reciever         (receiveWheather)
 
 type InfoWithJSON = (Value, ResJSON)
 
@@ -31,10 +31,10 @@ getWheather (Coords CoordsStr {..}) = do
   let eLat = readEither latStr :: Either String Double
   let eLon = readEither lonStr :: Either String Double
   case eLat of
-    Left msg -> pure . httpErrorResponse $ "lat is not a number"
+    Left _ -> pure . httpErrorResponse $ "lat is not a number"
     Right la ->
       case eLon of
-        Left msg -> pure . httpErrorResponse $ "lon is not a number"
+        Left _ -> pure . httpErrorResponse $ "lon is not a number"
         Right lo -> do
           let coords = Coordinates la lo
           getWheatherByCoords coords
@@ -90,12 +90,12 @@ getWheatherByCoords coords = do
     Just result -> pure result
     Nothing -> do
       eRes <- receiveWheather (Coords $ CoordsStr (show . latDoub $ coords) (show . lonDoub $ coords))
-      either (\l -> pure ()) tempsAdd eRes
+      either (const $ pure ()) tempsAdd eRes
       pure $ either id id eRes
   where
     findTemp :: Double -> Coordinates -> [InfoWithJSON] -> Maybe Value
-    findTemp rangeError coords lst = do
-      (res, _) <- foldr (helper rangeError coords) Nothing lst
+    findTemp rangeError coords_ lst = do
+      (res, _) <- foldr (helper rangeError coords_) Nothing lst
       Just res
 
     helper :: Double -> Coordinates -> InfoWithJSON -> Maybe InfoWithJSON -> Maybe InfoWithJSON
