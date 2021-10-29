@@ -2,7 +2,8 @@
 
 module Utility.Environment where
 
-import Database.Redis (checkedConnect, defaultConnectInfo)
+import Control.Exception (catch, SomeException)
+import Database.Redis (ConnectError, Connection, checkedConnect, defaultConnectInfo)
 import Types.Config as Config
   ( ConfigFields
       ( ConfigFields,
@@ -14,8 +15,8 @@ import Types.Config as Config
       ),
   )
 import Types.Environment (Environment (..))
-import Utility.Config (readConfig)
 import Utility.CLArguments (getWheaterAPIKey)
+import Utility.Config (readConfig)
 
 makeEnvironment :: IO (Either String Environment)
 makeEnvironment = do
@@ -23,6 +24,18 @@ makeEnvironment = do
   case eConfig of
     Left err -> pure . Left $ err
     Right ConfigFields {..} -> do
-      conn <- checkedConnect defaultConnectInfo
-      wheaterAPIKey <- getWheaterAPIKey
-      pure . Right $ Environment {..}
+      eConn <- connectToRedis
+      case eConn of
+        Left err -> pure . Left $ err
+        Right conn -> do
+          wheaterAPIKey <- getWheaterAPIKey
+          pure . Right $ Environment {..}
+
+connectToRedis :: IO (Either String Connection)
+connectToRedis =
+  catch
+    ( do
+        conn <- checkedConnect defaultConnectInfo
+        pure . Right $ conn
+    )
+    (\e -> pure . Left $ "Redis connection error: " ++  show (e :: SomeException))
