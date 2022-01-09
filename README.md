@@ -1,4 +1,104 @@
-# test-task-getshop
+# Haskell wheather cache server
+
+## Eng
+
+This app is a cache server for storing wheater data from OpenWheaterMap. Server can get data by city, city id (it can be founded here http://bulk.openweathermap.org/sample/), ZIP code or by coordinates. Also supports automatic updates for sertain pre-given locations.
+
+### Server requests
+
+By city
+
+    /city?q={City name}
+    /city?q=London
+
+By city id
+
+    /cityid/?id={ID}
+    /cityid/?id=2172797
+    
+By ZIP code
+
+    /zipcode/?zip={ZIP code}
+    /zipcode/?zip=94040,us
+
+By coordinates
+
+    /coords/?lat={lattitude}&lon={longtitude}
+    /coords/?lat=35&lon=139
+
+### Server setup
+
+OpenWheaterMap API key is passed via command line arguments
+
+    stack run -- --api {key}
+
+All other parameters are passed via a configuration file config/congif.yaml
+
+#### Parameters
+
+port: server port
+
+    port: 8004
+
+timeError: optional, an acceptable time error, measurment unit -- seconds, default value -- 1200 (20 minutes)
+
+    timeError: 3600
+
+rangeError: optional, an acceptable range error, measurment unit -- kilometers, default value -- 30
+
+    rangeError: 100
+
+updateTime: optional, time gap between automatic updates, measurment unit -- seconds, default value -- 1800 (30 minutes)
+
+    udpateTime: 3600
+
+locations: a list of locations to be automatically updated
+
+##### Location data format for the configuration file
+
+typ: type of a request
+
+    typ = "city" | "cityId" | "zipCode" | "coords"
+
+val: only for city name, ZIP code and city id:
+- "city": city name
+- "cityId": city id
+- "zipCode": ZIP code of a location
+
+        - typ: city
+          val: London
+        - typ: cityId
+          val: "2172797"
+        - typ: zipCode
+          val: "94040,us"
+
+lat/lon: for locations by coordinates. Latitude/longitude accordingly
+
+        - typ: coords
+          lat: "35"
+          lon: "139"
+
+### Internal organization
+
+For storing data the app uses Redis. There are 4 structures:
+- Temperature_Ordered_Set : Ordered Set
+- Cities_Coords_Map : HashMap
+- CitiesIDs_Coords_Map : HashMap
+- zipcode_Coords_Map : HashMap
+
+The first one is used for storing wheather JSONs by coordinates,  the remaining thee are for matching places with coordinates (location data -> its coordinates). 
+
+After receiving a request without coordinates (like request by a city) the server tries to find its coordinates in one of the maps. If the place is not found the server requests wheather data from the OpenWheatherMap, looks into the response and creates a new entry in the according map (the response contains the coordinates). In case the server has the coordination data without sending a request, it tries to find an appropriate entry it in the Temperature_Ordered_Set.
+
+The data in the Ordered Set is ordered by longitude.
+
+For quick search the server calculates two points, which create borders of a sector, where the appropriate result may be found. The points are longtitudes of places if one tries to walk the whole range error eastward or westward accordingly. After that the server gets all points from this sector and linearly search the nearest to the requested location (and not expired).
+
+![alt Explanation_Picture](explanation.png)
+
+After each request to the OpenWheatherMap servers the data stored in the set is updated.
+
+## Rus
 
 Приложение реализует кеш-сервер для погоды. Сервер позволяет узнать погоду по городу, id города (может быть найден тут: http://bulk.openweathermap.org/sample/), zip-коду или координатам.
 
